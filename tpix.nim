@@ -1,0 +1,150 @@
+# tpix - simple terminal image viewer using the kitty graphics protocol
+# See https://sw.kovidgoyal.net/kitty/graphics-protocol/ for details
+
+import
+  termios,
+  terminal,
+  math,
+  base64,
+  strformat,
+  strutils,
+  pixie,
+  docopt
+
+
+const
+  escStart = "\e_G"
+  escEnd = "\e\\"
+  chunkSize = 4096
+  version = "1.0"
+
+let doc = """
+Usage:
+  tpix [options] [FILE]
+
+Options:
+  -h --help             Show help message.
+  --version             Show version.
+  -n --noresize         Disable automatic resizing.
+  -W --width WIDTH      Specify image width.
+  -H --height HEIGHT    Specify image height.
+  -b --background       Add white background if image is transparent.
+  -p --printname        Print file name.
+  -f --fullwidth        Resize image to fill terminal width.
+"""
+
+
+proc terminalWidthPixels(istty = 0): int =
+  var winSize: IOctl_WinSize
+  if ioctl(cint(istty), TIOCGWINSZ, addr winsize) != -1:
+    result = int(winsize.ws_xpixel)
+  else:
+    result = 0
+
+proc writeChunk(ctrlCode, imgData: string) =
+  stdout.write(escStart)
+  stdout.write(ctrlCode)
+  stdout.write(imgData)
+  stdout.write(escEnd)
+
+proc resizeImage(img: var Image, args: Table[system.string, docopt.Value], termWidth: int) =
+  var
+    width = 0
+    height = 0
+  
+  let resize =
+    if args["--noresize"]: false
+    else: true
+
+  if args["--width"] and args["--height"]:
+    try:
+      width = parseInt($args["--width"])
+      height = parseInt($args["--height"])
+    except:
+      quit("Error: WIDTH/HEIGHT not a valid integer.")
+  elif args["--width"]:
+    try:
+      width = parseInt($args["--width"])
+      height = round(img.height.float*(width/img.width)).int
+    except:
+      quit("Error: WIDTH not a valid integer.")
+  elif args["--height"]:
+    try:
+      height = parseInt($args["--height"])
+      width = round(img.width.float*(height/img.height)).int
+    except:
+      quit("Error: HEIGHT not a valid integer.")
+  elif img.width > termWidth and resize:
+    width = termWidth
+    height = round(img.height.float*(termWidth/img.width)).int
+  elif args["--fullwidth"]:
+    width = termWidth
+    height = round(img.height.float*(termWidth/img.width)).int
+  
+  if width != 0:
+    img = img.resize(width, height)
+
+proc addBackground(img: var Image) =
+  let bgimg = newImage(img.width, img.height)
+  bgimg.fill(rgba(255, 255, 255, 255))
+  bgimg.draw(img)
+  img = bgimg
+
+
+
+proc main() =
+  let args = docopt(doc, version = fmt"tpix {version}")
+
+  var istty = 0
+  var img =
+    if not isatty(stdin):
+      istty = 1
+      if args["FILE"]:
+        stderr.write("Warning: Input file specified when receiving data from STDIN.")
+        stderr.write("Only data from STDIN is shown.")
+      try:
+        decodeImage(stdin.readAll)
+      except AssertionDefect:
+        quit("Error reading from STDIN.")
+    else:
+      if not args["FILE"]:
+        quit(doc)
+      try:
+        readImage($args["FILE"])
+      except AssertionDefect:
+        quit("Error reading input file.")
+
+  let termWidth = terminalWidthPixels(istty)
+  img.resizeImage(args, termWidth)
+
+  if args["--background"]:
+    img.addBackground()
+
+  let
+    imgStr = encode(encodeImage(img, PngFormat))
+    imgLen = imgStr.len
+
+  if imgLen <= chunkSize:
+    var ctrlCode = "a=T,f=100;"
+    writeChunk(ctrlCode, imgStr)
+  else:
+    var
+      ctrlCode = "a=T,f=100,m=1;"
+      chunk = chunkSize
+
+    while chunk <= imgLen:
+      if chunk == imgLen:
+        break
+      writeChunk(ctrlCode, imgStr[chunk-chunkSize..chunk-1])
+      ctrlCode = "m=1;"
+      chunk += chunkSize
+
+    ctrlCode = "m=0;"
+    writeChunk(ctrlCode, imgStr[chunk-chunkSize..imgLen-1])
+
+  if args["--printname"]:
+    echo args["FILE"]
+  stdout.write("\n")
+    #stderr.write("Terminal width in pixels: ", terminalWidthPixels(istty), "\n")
+
+main()
