@@ -2,6 +2,9 @@
 tpix
 tpix_size
 
+#Other
+tiger.svg
+test.py
 
 # VS code subfolder
 .vscode/
