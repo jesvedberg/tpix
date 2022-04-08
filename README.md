@@ -8,13 +8,15 @@
 
 ### Background
 
-As a bioinformatician, I am often working on remote servers and clusters where I don't have root access. Sometimes when analyzing data I want to generate quick plots, and viewing these plots directly in the terminal over SSH is a nice workflow. I previously had a Mac and used iTerm2, which can show images by using a simple bash script that can easily be installed on any system. Recently I moved to a Linux system, where I've been the Kitty terminal emulator. Kitty has support for viewing images in the terminal and also requires a program to be installed on the computer that wraps the image data in a format that Kitty can understand. Unlike in the case of iTerm2, I have not been able to find such a program that can easily be installed on remote systems without root access. I therefor decided to write my own solution, where I wanted to create a single dependency free binary that can easily be copied and run from any modern Linux system. For this purpose I picked the Nim language, as it is a compiled language that makes it easy to generate statically linked binaries.
+As a bioinformatician, I am often working on remote servers and clusters where I don't have root access. Sometimes when analyzing data I want to generate quick plots, and viewing these plots directly in the terminal over SSH is a nice workflow. I previously had a Mac and used iTerm2, which can show images by using a simple bash script that can easily be installed on any system. Recently I moved to a Linux laptop, where I've been using the Kitty terminal emulator. Kitty has support for viewing images in the terminal and also requires a program to be installed on the computer that wraps the image data in a format that Kitty can understand. Unlike in the case of iTerm2, I have not been able to find such a program that can easily be installed on remote systems without root access. I therefor decided to write my own solution, where I wanted to create a single dependency-free binary that can easily be copied and run from any modern Linux system. For this purpose I picked the Nim language, as it is a compiled language that makes it easy to generate statically linked binaries.
 
 ### Installation
 
-A Linux 64-bit binary version that has been statically linked using MUSL is available at the release page.
+**WARNING: This README file is still a work in progress and the installation instructions are still incomplete.**
 
-To compile tpix from source, make sure you have the Nim compiler installed, then clone this GitHub project and enter the directory. The build a dynamically linked executable use the following command:
+A Linux 64-bit binary version that has been statically linked using MUSL is available at the release page. (Incomplete)
+
+To compile tpix from source make sure you have the Nim compiler installed, together with the Nim libraries Pixie and Docopt. For a static build, MUSL is also required. Clone this GitHub project and enter the directory. The build a dynamically linked executable use the following command:
 
 ```
 nim build
