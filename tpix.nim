@@ -117,6 +117,9 @@ proc main() =
   let termWidth = terminalWidthPixels(istty)
   img.resizeImage(args, termWidth)
 
+  if args["--printname"]:
+    echo args["FILE"]
+
   if args["--background"]:
     img.addBackground()
 
@@ -142,8 +145,6 @@ proc main() =
     ctrlCode = "m=0;"
     writeChunk(ctrlCode, imgStr[chunk-chunkSize..imgLen-1])
 
-  if args["--printname"]:
-    echo args["FILE"]
   stdout.write("\n")
     #stderr.write("Terminal width in pixels: ", terminalWidthPixels(istty), "\n")
 
