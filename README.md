@@ -4,7 +4,7 @@
 
 `tpix` can view the following image formats: PNG, JPG, GIF (animated GIFs not supported), BMP, QOI, PPM and SVG (currently only limited support).
 
-`tpix` has so far only been compiled on x86_64 Linux and it been tested with [Kitty](https://sw.kovidgoyal.net/kitty/) and [Wezterm](https://wezfurlong.org/wezterm/). Viewing images in Wezterm is slightly buggy at the moment and only one image will be shown at the time. Neither Kitty nor WezTerm currently supports showing images when using terminal multiplexers, such as tmux or screen.
+`tpix` has so far only been compiled on x86_64 Linux and it has been tested with [Kitty](https://sw.kovidgoyal.net/kitty/) and [Wezterm](https://wezfurlong.org/wezterm/). Viewing images in Wezterm is slightly buggy at the moment and only one image will be shown at the time. Neither Kitty nor WezTerm currently supports showing images when using terminal multiplexers, such as tmux or screen.
 
 ![tpix screenshot](docs/tpix_screenshot.png)
 
@@ -32,7 +32,7 @@ nim build_static
 
 ### Usage
 
-By default `tpix` will show images that are smaller than the width of the terminal and their native size, and resize larger images to fit the terminal.
+By default `tpix` will show images that are smaller than the width of the terminal at their native size, and resize larger images to fit the terminal.
 
 ```
 tpix image.jpg

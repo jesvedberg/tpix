@@ -117,15 +117,15 @@ proc main() =
   let termWidth = terminalWidthPixels(istty)
   img.resizeImage(args, termWidth)
 
-  if args["--printname"]:
-    echo args["FILE"]
-
   if args["--background"]:
     img.addBackground()
 
   let
     imgStr = encode(encodeImage(img, PngFormat))
     imgLen = imgStr.len
+
+  if args["--printname"]:
+    echo args["FILE"]
 
   if imgLen <= chunkSize:
     var ctrlCode = "a=T,f=100;"
