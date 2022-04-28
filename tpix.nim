@@ -125,7 +125,10 @@ proc main() =
     imgLen = imgStr.len
 
   if args["--printname"]:
-    echo args["FILE"]
+    if istty == 1:
+      echo "Image data from from stdin"
+    else:
+      echo args["FILE"]
 
   if imgLen <= chunkSize:
     var ctrlCode = "a=T,f=100;"
@@ -146,6 +149,6 @@ proc main() =
     writeChunk(ctrlCode, imgStr[chunk-chunkSize..imgLen-1])
 
   stdout.write("\n")
-    #stderr.write("Terminal width in pixels: ", terminalWidthPixels(istty), "\n")
+  #stderr.write("Terminal width in pixels: ", terminalWidthPixels(istty), "\n")
 
 main()
