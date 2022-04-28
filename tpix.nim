@@ -1,4 +1,4 @@
-# tpix - simple terminal image viewer using the kitty graphics protocol
+# tpix - a simple terminal image viewer using the kitty graphics protocol
 # See https://sw.kovidgoyal.net/kitty/graphics-protocol/ for details
 
 import
@@ -16,10 +16,12 @@ const
   escStart = "\e_G"
   escEnd = "\e\\"
   chunkSize = 4096
-  version = "1.0"
+  version = "1.0.0"
 
 
 let doc = """
+tpix - a simple terminal image viewer using the kitty graphics protocol
+
 Usage:
   tpix [options] [FILE]...
 
