@@ -18,9 +18,10 @@ const
   chunkSize = 4096
   version = "1.0"
 
+
 let doc = """
 Usage:
-  tpix [options] [FILE]
+  tpix [options] [FILE]...
 
 Options:
   -h --help             Show help message.
@@ -90,30 +91,16 @@ proc addBackground(img: var Image) =
   bgimg.draw(img)
   img = bgimg
 
-
-
-proc main() =
-  let args = docopt(doc, version = fmt"tpix {version}")
-
-  var istty = 0
+proc renderImage(args: Table[system.string, docopt.Value], istty: int, filename = "") =
   var img =
-    if not isatty(stdin):
-      istty = 1
-      if args["FILE"]:
-        stderr.write("Warning: Input file specified when receiving data from STDIN.")
-        stderr.write("Only data from STDIN is shown.")
+    if istty == 1:
       try:
         decodeImage(stdin.readAll)
       except AssertionDefect:
         quit("Error reading from STDIN.")
     else:
-      if not args["FILE"]:
-        quit(doc)
-      try:
-        readImage($args["FILE"])
-      except AssertionDefect:
-        quit("Error reading input file.")
-
+      readImage(filename)
+      
   let termWidth = terminalWidthPixels(istty)
   img.resizeImage(args, termWidth)
 
@@ -128,7 +115,7 @@ proc main() =
     if istty == 1:
       echo "Image data from from stdin"
     else:
-      echo args["FILE"]
+      echo filename
 
   if imgLen <= chunkSize:
     var ctrlCode = "a=T,f=100;"
@@ -150,5 +137,30 @@ proc main() =
 
   stdout.write("\n")
   #stderr.write("Terminal width in pixels: ", terminalWidthPixels(istty), "\n")
+
+
+proc main() =
+  let args = docopt(doc, version = fmt"tpix {version}")
+
+  var istty = 0
+  if not isatty(stdin):
+    istty = 1
+    if args["FILE"]:
+      stderr.write("Warning: Input file specified when receiving data from STDIN.")
+      stderr.write("Only data from STDIN is shown.")
+    try:
+      renderImage(args, istty)
+      #decodeImage(stdin.readAll)
+    except:
+      quit("Error reading from STDIN.")
+  else:
+    if not args["FILE"]:
+      quit(doc)
+    for filename in @(args["FILE"]): 
+      try:
+        renderImage(args, istty, filename)
+      except:
+        #quit("Error reading input file.")
+        echo fmt"Error: {filename} can not be read."
 
 main()

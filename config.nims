@@ -2,7 +2,7 @@
 # NimScript build file for tpix
 #
 
---define:pixieUseStb
+--d:pixieUseStb
 --mm:arc
 
 if defined(release) or defined(danger):
