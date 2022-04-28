@@ -150,7 +150,6 @@ proc main() =
       stderr.write("Only data from STDIN is shown.")
     try:
       renderImage(args, istty)
-      #decodeImage(stdin.readAll)
     except:
       quit("Error reading from STDIN.")
   else:
@@ -160,7 +159,6 @@ proc main() =
       try:
         renderImage(args, istty, filename)
       except:
-        #quit("Error reading input file.")
         echo fmt"Error: {filename} can not be read."
 
 main()
