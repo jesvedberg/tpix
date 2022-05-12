@@ -28,12 +28,12 @@ Usage:
 Options:
   -h --help             Show help message.
   --version             Show version.
-  -n --noresize         Disable automatic resizing.
   -W --width WIDTH      Specify image width.
   -H --height HEIGHT    Specify image height.
+  -f --fullwidth        Resize image to fill terminal width.
+  -n --noresize         Disable automatic resizing.
   -b --background       Add white background if image is transparent.
   -p --printname        Print file name.
-  -f --fullwidth        Resize image to fill terminal width.
 """
 
 

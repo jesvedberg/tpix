@@ -10,25 +10,24 @@
 
 ### Background
 
-As a bioinformatician, I am often working on remote servers and clusters where I don't have root access. Sometimes when analyzing data I want to generate quick plots, and viewing these plots directly in the terminal over SSH is a nice workflow. I previously had a Mac and used iTerm2, which can show images by using a simple bash script that can easily be installed on any system. Recently I moved to a Linux laptop, where I've been using the Kitty terminal emulator. Kitty has support for viewing images in the terminal and also requires a program to be installed on the computer that wraps the image data in a format that Kitty can understand. Unlike in the case of iTerm2, I have not been able to find such a program that can easily be installed on remote systems without root access. I therefor decided to write my own solution, where I wanted to create a single dependency-free binary that can easily be copied and run from any modern Linux system. For this purpose I picked the Nim language, as it is a compiled language that makes it easy to generate statically linked binaries.
+As a bioinformatician, I am often working on remote servers and clusters where I don't have root access. Sometimes when analyzing data I want to generate quick plots, and viewing these plots directly in the terminal over SSH is a nice workflow. I previously had a Mac and used iTerm2, which can show images by using a simple bash script that can easily be installed on any system. Recently I moved to a Linux laptop, where I've been using the Kitty terminal emulator. Kitty has support for viewing images in the terminal and also requires a program to be installed on the computer that wraps the image data in a format that Kitty can understand. Unlike in the case of iTerm2 though, I have not been able to find such a program that can easily be installed on remote systems without root access. I therefor decided to write my own solution, where I wanted to create a single dependency-free binary that can easily be copied and run from any modern Linux system. For this purpose I picked the Nim language, as it is a compiled language that makes it easy to generate statically linked binaries.
 
 ### Installation
 
-**WARNING: This README file is still a work in progress and the installation instructions are still incomplete.**
-
-A Linux 64-bit binary version that has been statically linked using musl is available at the release page. (Incomplete)
-
-To compile tpix from source make sure you have the Nim compiler installed, together with the Nim libraries Pixie and Docopt. For a static build, [musl](https://musl.libc.org/) is also required. Clone this GitHub project and enter the directory. The build a dynamically linked executable use the following command:
+Linux binaries for x86_64 and arm64 that have been statically linked using musl is available at the release page. A statically linked MacOSX x86_64 binary is also available. To install these, simply download and extract the available file suitable for your platform. For example:
 
 ```
-nim build
+wget https://github.com/jesvedberg/tpix/releases/download/v1.0.0/tpix-1.0.0-x86_64-linux.tar.gz
+tar xzf tpix-1.0.0-x86_64-linux.tar.gz
 ```
 
-and to build a statically linked version:
+To compile tpix from source make sure you have the [Nim compiler](https://nim-lang.org/) installed. The easiest way to compile and install tpix is by using the `nimble` package manager, which comes with the Nim compiler. This will install all necessary Nim dependencies (i.e. Pixie and Docopt).
 
 ```
-nim build_static
+nimble install https://github.com/jesvedberg/tpix
 ```
+
+This will compile a dynamically linked executable. Another option is to clone this repository and compile directly with Nim, but then Pixie and Docopt also need to be installed, that is still easiest to do using Nimble. If compiling directly, various build options are defined in the `config.nims` file. For instance, `nim build_static` will create a statically linked binary and you can see other options in the `config.nims` file.
 
 ### Usage
 
@@ -47,16 +46,18 @@ cat image.jpg | tpix
 Full help message:
 
 ```
+tpix - a simple terminal image viewer using the kitty graphics protocol
+
 Usage:
-  tpix [options] [FILE]
+  tpix [options] [FILE]...
 
 Options:
   -h --help             Show help message.
   --version             Show version.
-  -n --noresize         Disable automatic resizing.
   -W --width WIDTH      Specify image width.
   -H --height HEIGHT    Specify image height.
+  -f --fullwidth        Resize image to fill terminal width.
+  -n --noresize         Disable automatic resizing.
   -b --background       Add white background if image is transparent.
   -p --printname        Print file name.
-  -f --fullwidth        Resize image to fill terminal width.
-```
+  ```
