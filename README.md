@@ -14,7 +14,7 @@ As a bioinformatician, I am often working on remote servers and clusters where I
 
 ### Installation
 
-Linux binaries for x86_64 and arm64 that have been statically linked using musl is available at the release page. A statically linked MacOSX x86_64 binary is also available. To install these, simply download and extract the available file suitable for your platform. For example:
+Linux binaries for x86_64 and arm64 that have been statically linked using musl is available at the [release page](https://github.com/jesvedberg/tpix/releases). A statically linked MacOSX x86_64 binary is also available. To install these, simply download and extract the available file suitable for your platform. For example:
 
 ```
 wget https://github.com/jesvedberg/tpix/releases/download/v1.0.0/tpix-1.0.0-x86_64-linux.tar.gz
