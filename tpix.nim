@@ -44,10 +44,10 @@ proc terminalWidthPixels(istty = 0): int =
   else:
     result = 0
 
-proc writeChunk(ctrlCode, imgData: string) =
+proc writeChunk(ctrlCode: string, imgData: openArray[char]) =
   stdout.write(escStart)
   stdout.write(ctrlCode)
-  stdout.write(imgData)
+  discard stdout.writeChars(imgData, 0, imgData.len)
   stdout.write(escEnd)
 
 proc resizeImage(img: var Image, args: Table[system.string, docopt.Value], termWidth: int) =
@@ -130,12 +130,12 @@ proc renderImage(args: Table[system.string, docopt.Value], istty: int, filename 
     while chunk <= imgLen:
       if chunk == imgLen:
         break
-      writeChunk(ctrlCode, imgStr[chunk-chunkSize..chunk-1])
+      writeChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, chunk-1))
       ctrlCode = "m=1;"
       chunk += chunkSize
 
     ctrlCode = "m=0;"
-    writeChunk(ctrlCode, imgStr[chunk-chunkSize..imgLen-1])
+    writeChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, imgLen-1))
 
   stdout.write("\n")
   #stderr.write("Terminal width in pixels: ", terminalWidthPixels(istty), "\n")
