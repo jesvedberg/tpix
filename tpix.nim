@@ -44,17 +44,21 @@ proc terminalWidthPixels(istty = 0): int =
   else:
     result = 0
 
-proc writeChunk(ctrlCode: string, imgData: openArray[char]) =
-  stdout.write(escStart)
-  stdout.write(ctrlCode)
-  discard stdout.writeChars(imgData, 0, imgData.len)
-  stdout.write(escEnd)
+proc add(result: var string, a: openArray[char]) =
+  result.setLen result.len + a.len
+  copyMem result[^a.len].addr, a[0].unsafeAddr, a.len
+
+proc addChunk(result: var string, ctrlCode: string, imgData: openArray[char]) =
+  result.add escStart
+  result.add ctrlCode
+  result.add imgData
+  result.add escEnd
 
 proc resizeImage(img: var Image, args: Table[system.string, docopt.Value], termWidth: int) =
   var
     width = 0
     height = 0
-  
+
   let resize =
     if args["--noresize"]: false
     else: true
@@ -113,6 +117,8 @@ proc renderImage(args: Table[system.string, docopt.Value], istty: int, filename 
     imgStr = encode(encodeImage(img, PngFormat))
     imgLen = imgStr.len
 
+  var payload = newStringOfCap(imgLen)
+
   if args["--printname"]:
     if istty == 1:
       echo "Image data from from stdin"
@@ -121,7 +127,7 @@ proc renderImage(args: Table[system.string, docopt.Value], istty: int, filename 
 
   if imgLen <= chunkSize:
     var ctrlCode = "a=T,f=100;"
-    writeChunk(ctrlCode, imgStr)
+    payload.addChunk(ctrlCode, imgStr)
   else:
     var
       ctrlCode = "a=T,f=100,m=1;"
@@ -130,14 +136,14 @@ proc renderImage(args: Table[system.string, docopt.Value], istty: int, filename 
     while chunk <= imgLen:
       if chunk == imgLen:
         break
-      writeChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, chunk-1))
+      payload.addChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, chunk-1))
       ctrlCode = "m=1;"
       chunk += chunkSize
 
     ctrlCode = "m=0;"
-    writeChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, imgLen-1))
+    payload.addChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, imgLen-1))
 
-  stdout.write("\n")
+  stdout.writeLine(payload)
   #stderr.write("Terminal width in pixels: ", terminalWidthPixels(istty), "\n")
 
 
