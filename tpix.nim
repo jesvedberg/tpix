@@ -16,7 +16,7 @@ const
   escStart = "\e_G"
   escEnd = "\e\\"
   chunkSize = 4096
-  version = "1.0.0"
+  version = "1.0.1"
 
 
 let doc = """
