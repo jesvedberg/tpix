@@ -1,43 +1,24 @@
 # tpix - a simple terminal image viewer using the kitty graphics protocol
 # See https://sw.kovidgoyal.net/kitty/graphics-protocol/ for details
 
-import
+import std / [
   termios,
   terminal,
   math,
   base64,
   strformat,
-  strutils,
+  strutils
+],
   pixie,
-  docopt
+  cligen
 
 
 const
   escStart = "\e_G"
   escEnd = "\e\\"
   chunkSize = 4096
-  version = "1.0.1"
 
-
-let doc = """
-tpix - a simple terminal image viewer using the kitty graphics protocol
-
-Usage:
-  tpix [options] [FILE]...
-
-Options:
-  -h --help             Show help message.
-  --version             Show version.
-  -W --width WIDTH      Specify image width.
-  -H --height HEIGHT    Specify image height.
-  -f --fullwidth        Resize image to fill terminal width.
-  -n --noresize         Disable automatic resizing.
-  -b --background       Add white background if image is transparent.
-  -p --printname        Print file name.
-"""
-
-
-proc terminalWidthPixels(istty = 0): int =
+proc terminalWidthPixels(istty: bool): int =
   var winSize: IOctl_WinSize
   if ioctl(cint(istty), TIOCGWINSZ, addr winsize) != -1:
     result = int(winsize.ws_xpixel)
@@ -50,40 +31,22 @@ proc writeChunk(ctrlCode: string, imgData: openArray[char]) =
   discard stdout.writeChars(imgData, 0, imgData.len)
   stdout.write(escEnd)
 
-proc resizeImage(img: var Image, args: Table[system.string, docopt.Value], termWidth: int) =
+proc resizeImage(img: var Image, termWidth: int, noresize, fullwidth: bool, width, height: int) =
   var
-    width = 0
-    height = 0
-  
-  let resize =
-    if args["--noresize"]: false
-    else: true
+    width = width
+    height = height
 
-  if args["--width"] and args["--height"]:
-    try:
-      width = parseInt($args["--width"])
-      height = parseInt($args["--height"])
-    except:
-      quit("Error: WIDTH/HEIGHT not a valid integer.")
-  elif args["--width"]:
-    try:
-      width = parseInt($args["--width"])
-      height = round(img.height.float*(width/img.width)).int
-    except:
-      quit("Error: WIDTH not a valid integer.")
-  elif args["--height"]:
-    try:
-      height = parseInt($args["--height"])
-      width = round(img.width.float*(height/img.height)).int
-    except:
-      quit("Error: HEIGHT not a valid integer.")
-  elif img.width > termWidth and resize:
+  if width > 0 and height == 0:
+    height = round(img.height.float*(width/img.width)).int
+  elif height > 0 and width == 0:
+    width = round(img.width.float*(height/img.height)).int
+  elif img.width > termWidth and not noresize:
     width = termWidth
     height = round(img.height.float*(termWidth/img.width)).int
-  elif args["--fullwidth"]:
+  elif fullwidth:
     width = termWidth
     height = round(img.height.float*(termWidth/img.width)).int
-  
+
   if width != 0:
     img = img.resize(width, height)
 
@@ -93,31 +56,10 @@ proc addBackground(img: var Image) =
   bgimg.draw(img)
   img = bgimg
 
-proc renderImage(args: Table[system.string, docopt.Value], istty: int, filename = "") =
-  var img =
-    if istty == 1:
-      try:
-        decodeImage(stdin.readAll)
-      except AssertionDefect:
-        quit("Error reading from STDIN.")
-    else:
-      readImage(filename)
-      
-  let termWidth = terminalWidthPixels(istty)
-  img.resizeImage(args, termWidth)
-
-  if args["--background"]:
-    img.addBackground()
-
+proc renderImage(img: var Image) =
   let
     imgStr = encode(encodeImage(img, PngFormat))
     imgLen = imgStr.len
-
-  if args["--printname"]:
-    if istty == 1:
-      echo "Image data from from stdin"
-    else:
-      echo filename
 
   if imgLen <= chunkSize:
     var ctrlCode = "a=T,f=100;"
@@ -137,30 +79,56 @@ proc renderImage(args: Table[system.string, docopt.Value], istty: int, filename 
     ctrlCode = "m=0;"
     writeChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, imgLen-1))
 
-  stdout.write("\n")
-  #stderr.write("Terminal width in pixels: ", terminalWidthPixels(istty), "\n")
+  stdout.write('\n')
 
+proc processImage(img: var Image, background, noresize, fullwidth: bool,
+  termWidth, width, height: int) =
 
-proc main() =
-  let args = docopt(doc, version = fmt"tpix {version}")
+  img.resizeImage(termWidth, noresize, fullwidth, width, height)
+  if background:
+    img.addBackground
+  img.renderImage
 
-  var istty = 0
-  if not isatty(stdin):
-    istty = 1
-    if args["FILE"]:
-      stderr.write("Warning: Input file specified when receiving data from STDIN.")
+proc tpix(
+  files: seq[string],
+  background = false, printname = false, noresize = false, fullwidth = false,
+  width = 0, height = 0) =
+  ## a simple terminal image viewer using the kitty graphics protocol
+
+  let
+    istty = stdin.isatty
+    termWidth = terminalWidthPixels istty
+
+  if not istty:
+    if files.len > 0:
+      stderr.write("Warning: Input file specified when receiving data from STDIN.\n")
       stderr.write("Only data from STDIN is shown.")
     try:
-      renderImage(args, istty)
-    except:
+      if printname:
+        echo "Data from STDIN."
+      var image = stdin.readAll.decodeImage
+      image.processImage(background, noresize, fullwidth, termWidth, width, height)
+    except PixieError:
       quit("Error reading from STDIN.")
   else:
-    if not args["FILE"]:
-      quit(doc)
-    for filename in @(args["FILE"]): 
+    if files.len == 0:
+      quit("Provide 1 or more files as arguments or pipe image data to STDIN.")
+    for filename in files:
       try:
-        renderImage(args, istty, filename)
-      except:
+        if printname:
+          echo filename
+        var image = filename.readImage
+        image.processImage(background, noresize, fullwidth, termWidth, width, height)
+      except PixieError:
         echo fmt"Error: {filename} can not be read."
 
-main()
+clCfg.version = "1.0.1"
+dispatch tpix,
+  help = {
+    "width": "Specify image width.",
+    "height": "Specify image height.",
+    "fullwidth": "Resize image to fill terminal width.",
+    "noresize": "Disable automatic resizing.",
+    "background": "Add white background if image is transparent.",
+    "printname": "Print file name."
+  }
