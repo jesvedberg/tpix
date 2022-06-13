@@ -21,13 +21,13 @@ wget https://github.com/jesvedberg/tpix/releases/download/v1.0.0/tpix-1.0.0-x86_
 tar xzf tpix-1.0.0-x86_64-linux.tar.gz
 ```
 
-To compile tpix from source make sure you have the [Nim compiler](https://nim-lang.org/) installed. The easiest way to compile and install tpix is by using the `nimble` package manager, which comes with the Nim compiler. This will install all necessary Nim dependencies (i.e. Pixie and Docopt).
+To compile tpix from source make sure you have the [Nim compiler](https://nim-lang.org/) installed. The easiest way to compile and install tpix is by using the `nimble` package manager, which comes with the Nim compiler. This will install all necessary Nim dependencies (i.e. Pixie and Cligen).
 
 ```
 nimble install https://github.com/jesvedberg/tpix
 ```
 
-This will compile a dynamically linked executable. Another option is to clone this repository and compile directly with Nim, but then Pixie and Docopt also need to be installed, that is still easiest to do using Nimble. If compiling directly, various build options are defined in the `config.nims` file. For instance, `nim build_static` will create a statically linked binary and you can see other options in the `config.nims` file.
+This will compile a dynamically linked executable. Another option is to clone this repository and compile directly with Nim, but then Pixie and Cligen also need to be installed, that is still easiest to do using Nimble. If compiling directly, various build options are defined in the `config.nims` file. For instance, `nim build_static` will create a statically linked binary and you can see other options in the `config.nims` file.
 
 ### Usage
 
@@ -46,18 +46,17 @@ cat image.jpg | tpix
 Full help message:
 
 ```
-tpix - a simple terminal image viewer using the kitty graphics protocol
-
 Usage:
-  tpix [options] [FILE]...
-
+  tpix [optional-params] [files: string...]
+A simple terminal image viewer using the kitty graphics protocol
 Options:
-  -h --help             Show help message.
-  --version             Show version.
-  -W --width WIDTH      Specify image width.
-  -H --height HEIGHT    Specify image height.
-  -f --fullwidth        Resize image to fill terminal width.
-  -n --noresize         Disable automatic resizing.
-  -b --background       Add white background if image is transparent.
-  -p --printname        Print file name.
-  ```
+  -h, --help                     print this cligen-erated help
+  --help-syntax                  advanced: prepend,plurals,..
+  --version         bool  false  print version
+  -b, --background  bool  false  Add white background if image is transparent.
+  -p, --printname   bool  false  Print file name.
+  -n, --noresize    bool  false  Disable automatic resizing.
+  -f, --fullwidth   bool  false  Resize image to fill terminal width.
+  -w=, --width=     int   0      Specify image width.
+  --height=         int   0      Specify image height.
+```
