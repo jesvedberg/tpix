@@ -20,16 +20,20 @@ const
 
 proc terminalWidthPixels(istty: bool): int =
   var winSize: IOctl_WinSize
-  if ioctl(cint(istty), TIOCGWINSZ, addr winsize) != -1:
+  if ioctl(cint(not istty), TIOCGWINSZ, addr winsize) != -1:
     result = int(winsize.ws_xpixel)
   else:
     result = 0
 
-proc writeChunk(ctrlCode: string, imgData: openArray[char]) =
-  stdout.write(escStart)
-  stdout.write(ctrlCode)
-  discard stdout.writeChars(imgData, 0, imgData.len)
-  stdout.write(escEnd)
+proc add(result: var string, a: openArray[char]) =
+  result.setLen result.len + a.len
+  copyMem result[^a.len].addr, a[0].unsafeAddr, a.len
+
+proc addChunk(result: var string, ctrlCode: string, imgData: openArray[char]) =
+  result.add escStart
+  result.add ctrlCode
+  result.add imgData
+  result.add escEnd
 
 proc resizeImage(img: var Image, termWidth: int, noresize, fullwidth: bool, width, height: int) =
   var
@@ -61,9 +65,11 @@ proc renderImage(img: var Image) =
     imgStr = encode(encodeImage(img, PngFormat))
     imgLen = imgStr.len
 
+  var payload = newStringOfCap(imgLen)
+
   if imgLen <= chunkSize:
     var ctrlCode = "a=T,f=100;"
-    writeChunk(ctrlCode, imgStr)
+    payload.addChunk(ctrlCode, imgStr)
   else:
     var
       ctrlCode = "a=T,f=100,m=1;"
@@ -72,14 +78,15 @@ proc renderImage(img: var Image) =
     while chunk <= imgLen:
       if chunk == imgLen:
         break
-      writeChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, chunk-1))
+      payload.addChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, chunk-1))
       ctrlCode = "m=1;"
       chunk += chunkSize
 
     ctrlCode = "m=0;"
-    writeChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, imgLen-1))
+    payload.addChunk(ctrlCode, imgStr.toOpenArray(chunk-chunkSize, imgLen-1))
 
-  stdout.write('\n')
+  stdout.writeLine(payload)
+  #stderr.write("Terminal width in pixels: ", terminalWidthPixels(istty), "\n")
 
 proc processImage(img: var Image, background, noresize, fullwidth: bool,
   termWidth, width, height: int) =
@@ -98,6 +105,8 @@ proc tpix(
   let
     istty = stdin.isatty
     termWidth = terminalWidthPixels istty
+
+  echo "Width: ", termWidth
 
   if not istty:
     if files.len > 0:
