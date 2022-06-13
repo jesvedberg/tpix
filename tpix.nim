@@ -100,7 +100,7 @@ proc tpix(
   files: seq[string],
   background = false, printname = false, noresize = false, fullwidth = false,
   width = 0, height = 0) =
-  ## a simple terminal image viewer using the kitty graphics protocol
+  ## A simple terminal image viewer using the kitty graphics protocol
 
   let
     istty = stdin.isatty
