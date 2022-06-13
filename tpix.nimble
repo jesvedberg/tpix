@@ -8,4 +8,4 @@ bin           = @["tpix"]
 # Dependencies
 requires "nim >= 1.4.8"
 requires "pixie"
-requires "docopt"
+requires "cligen"

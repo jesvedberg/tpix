@@ -5,10 +5,6 @@
 --d:pixieUseStb
 --mm:arc
 
-if defined(release) or defined(danger):
-  --opt:speed
-  
-
 task build, "Build tpix":
   exec "nim -d:release c tpix.nim"
 
