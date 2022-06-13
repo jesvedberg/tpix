@@ -106,8 +106,6 @@ proc tpix(
     istty = stdin.isatty
     termWidth = terminalWidthPixels istty
 
-  echo "Width: ", termWidth
-
   if not istty:
     if files.len > 0:
       stderr.write("Warning: Input file specified when receiving data from STDIN.\n")
