@@ -20,7 +20,7 @@ const
 
 proc terminalWidthPixels(istty: bool): int =
   var winSize: IOctl_WinSize
-  if ioctl(cint(istty), TIOCGWINSZ, addr winsize) != -1:
+  if ioctl(cint(not istty), TIOCGWINSZ, addr winsize) != -1:
     result = int(winsize.ws_xpixel)
   else:
     result = 0
@@ -67,12 +67,6 @@ proc renderImage(img: var Image) =
 
   var payload = newStringOfCap(imgLen)
 
-  if args["--printname"]:
-    if istty == 1:
-      echo "Image data from from stdin"
-    else:
-      echo filename
-
   if imgLen <= chunkSize:
     var ctrlCode = "a=T,f=100;"
     payload.addChunk(ctrlCode, imgStr)
@@ -111,6 +105,8 @@ proc tpix(
   let
     istty = stdin.isatty
     termWidth = terminalWidthPixels istty
+
+  echo "Width: ", termWidth
 
   if not istty:
     if files.len > 0:
