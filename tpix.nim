@@ -12,6 +12,8 @@ import std / [
   pixie,
   cligen
 
+const NimblePkgVersion {.strdefine.} = "Unknown"
+const version = NimblePkgVersion
 
 const
   escStart = "\e_G"
@@ -141,7 +143,7 @@ proc tpix(
       except:
         echo fmt"Error: {getCurrentExceptionMsg()}"
 
-clCfg.version = "1.0.1"
+clCfg.version = version
 dispatch tpix,
   help = {
     "width": "Specify image width.",

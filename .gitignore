@@ -13,6 +13,9 @@ test.py
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# release folder
+releases/
+
 # Prerequisites
 *.d
 
