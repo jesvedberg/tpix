@@ -116,7 +116,13 @@ proc tpix(
       var image = stdin.readAll.decodeImage
       image.processImage(background, noresize, fullwidth, termWidth, width, height)
     except PixieError:
-      quit("Error reading from STDIN.")
+      echo fmt"Error: {getCurrentExceptionMsg()}"
+    except AssertionDefect:
+      let errMsg = getCurrentExceptionMsg()
+      if errMsg.startsWith("gif.nim(173, 16)"):
+        echo fmt"Error: Cannot open file. (Possible cause: animated GIFs not supported.)"
+    except:
+      echo fmt"Error: {getCurrentExceptionMsg()}"
   else:
     if files.len == 0:
       quit("Provide 1 or more files as arguments or pipe image data to STDIN.")
@@ -127,7 +133,13 @@ proc tpix(
         var image = filename.readImage
         image.processImage(background, noresize, fullwidth, termWidth, width, height)
       except PixieError:
-        echo fmt"Error: {filename} can not be read."
+        echo fmt"Error: {getCurrentExceptionMsg()}"
+      except AssertionDefect:
+        let errMsg = getCurrentExceptionMsg()
+        if errMsg.startsWith("gif.nim(173, 16)"):
+          echo fmt"Error: Cannot open file. (Possible cause: animated GIFs not supported.)"
+      except:
+        echo fmt"Error: {getCurrentExceptionMsg()}"
 
 clCfg.version = "1.0.1"
 dispatch tpix,

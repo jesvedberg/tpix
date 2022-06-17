@@ -60,3 +60,5 @@ Options:
   -w=, --width=     int   0      Specify image width.
   --height=         int   0      Specify image height.
 ```
+
+Note: Width and height values can be separated from their flags by either space, `=` or `:`. In other words, `-w 300`, `-w=300` and `-w:300` are all valid. The same rules apply for the long flags `--width` and `--height` as well.
