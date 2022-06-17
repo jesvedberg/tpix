@@ -4,13 +4,13 @@
 
 `tpix` can view the following image formats: PNG, JPG, GIF (animated GIFs not supported), BMP, QOI, PPM and SVG (currently only limited support).
 
-`tpix` has so far been compiled on x86_64 and arm64 Linux, x86_64 MacOSX, and it has been tested with [Kitty](https://sw.kovidgoyal.net/kitty/), [Wezterm](https://wezfurlong.org/wezterm/) and [Konsole](https://konsole.kde.org/) (version 22.4.1). Viewing images in Wezterm is slightly buggy at the moment and only one image will be shown at the time. None of these terminal emulators currently support showing images when using terminal multiplexers, such as tmux or screen.
+`tpix` has so far been compiled on x86_64 and arm64 Linux, x86_64 MacOSX, and it has been tested with [Kitty](https://sw.kovidgoyal.net/kitty/), [Wezterm](https://wezfurlong.org/wezterm/) and [Konsole](https://konsole.kde.org/) (version 22.04.1). Viewing images in Wezterm is slightly buggy at the moment and only one image will be shown at the time. None of these terminal emulators currently support showing images when using terminal multiplexers, such as tmux or screen.
 
 ![tpix screenshot](docs/tpix_screenshot.png)
 
 ### Background
 
-As a bioinformatician, I am often working on remote servers and clusters where I don't have root access. Sometimes when analyzing data I want to generate quick plots, and viewing these plots directly in the terminal over SSH is a nice workflow. I previously had a Mac and used iTerm2, which can show images by using a simple bash script that can easily be installed on any system. Recently I moved to a Linux laptop, where I've been using the Kitty terminal emulator. Kitty has support for viewing images in the terminal and also requires a program to be installed on the computer that wraps the image data in a format that Kitty can understand. Unlike in the case of iTerm2 though, I have not been able to find such a program that can easily be installed on remote systems without root access. I therefor decided to write my own solution, where I wanted to create a single dependency-free binary that can easily be copied and run from any modern Linux system. For this purpose I picked the Nim language, as it is a compiled language that makes it easy to generate statically linked binaries.
+As a bioinformatician, I am often working on remote servers and clusters where I don't have root access. Sometimes when analyzing data I want to generate quick plots, and viewing these plots directly in the terminal over SSH is a nice workflow. I previously had a Mac and used iTerm2, which can show images by using a simple bash script that can easily be installed on any system. Recently I moved to a Linux laptop, where I've been using the Kitty terminal emulator. Kitty has support for viewing images in the terminal and also requires a program to be installed on the computer that wraps the image data in a format that Kitty can understand. Unlike in the case of iTerm2 though, I have not been able to find such a program that can easily be installed on remote systems without root access. I therefor decided to write my own solution, where I wanted to create a single dependency-free binary that can easily be copied and run from any modern Linux system. For this purpose I picked the Nim language, as it is a compiled language that makes it easy to generate statically linked binaries and also supports painless cross-compilation.
 
 ### Installation
 
@@ -27,7 +27,7 @@ To compile tpix from source make sure you have the [Nim compiler](https://nim-la
 nimble install https://github.com/jesvedberg/tpix
 ```
 
-This will compile a dynamically linked executable. Another option is to clone this repository and compile directly with Nim, but then Pixie and Cligen also need to be installed, that is still easiest to do using Nimble. If compiling directly, various build options are defined in the `config.nims` file. For instance, `nim build_static` will create a statically linked binary and you can see other options in the `config.nims` file.
+This will compile a dynamically linked executable. Another option is to clone this repository and compile directly with Nim, but then Pixie and Cligen also need to be installed, that is still easiest to do using Nimble. If compiling directly, various build options are defined in the `tpix.nimble` file. For instance, `nimble build_static` will create a statically linked binary and you can see other options in the `tpix.nimble` file.
 
 ### Usage
 
@@ -37,7 +37,7 @@ By default `tpix` will show images that are smaller than the width of the termin
 tpix image.jpg
 ```
 
-Width and height can also be set manually, and resizing of large images can be turned off. `tpix` can also read image data from STDIN. Note that the image aspect ratio is preserved if only width or height is specified, but not if both of them are specified at the same time.
+Width and height can also be set manually, and resizing of large images can be turned off. Note that the image aspect ratio is preserved if only width or height is specified, but not if both of them are specified at the same time. `tpix` can also read image data from STDIN. 
 
 ```
 cat image.jpg | tpix
